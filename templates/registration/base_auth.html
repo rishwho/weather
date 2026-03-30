@@ -1,0 +1,152 @@
+{% load static %}
+{% load socialaccount %} 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Weather Authentication{% endblock %}</title>
+    <link rel="icon" type="image/png" href="{% static 'weather_app/images/favicon.jpg' %}">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary-blue: #0072ff;
+            --hover-blue: #0056b3;
+            --google-border: #747775;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0072ff 0%, #00c6ff 100%);
+            /* Changed to min-height so the page can scroll if the card is long */
+            min-height: 100vh; 
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0;
+            padding: 20px 0; /* Adds breathing room for the card on mobile */
+        }
+
+        /* --- 1. The White Card (Scrollbar Removed) --- */
+        .auth-card {
+            background: white;
+            padding: 2rem; 
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            width: 90%;
+            max-width: 380px; 
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            
+            /* Removes the internal scrollbar (grey line) */
+            max-height: none; 
+            overflow: visible; 
+        }
+
+        h2 { text-align: center; color: #333; margin-top: 0; margin-bottom: 1.5rem; }
+
+        /* --- 2. Compact Form Styling --- */
+        .helptext, form ul {
+            font-size: 0.75rem !important; 
+            color: #777;
+            margin: 5px 0 10px 0;
+            padding-left: 20px;
+            line-height: 1.4;
+        }
+        
+        form p { margin-bottom: 1rem; } 
+
+        label { display: block; font-weight: 600; margin-bottom: 5px; color: #555; font-size: 0.85rem; }
+        
+        input[type="text"], input[type="password"], input[type="email"] {
+            width: 100%;
+            height: 44px; 
+            padding: 0 12px;
+            margin-bottom: 5px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-size: 0.95rem;
+        }
+
+        /* --- 3. Buttons (Matched Size) --- */
+        .btn-auth {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            height: 44px; /* Standardized height */
+            border-radius: 22px; /* Perfect pill shape (Height / 2) */
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s;
+            box-sizing: border-box;
+            border: none;
+            width: 100%; /* Both buttons will now fill the card */
+        }
+
+        .btn-primary { 
+            background-color: var(--primary-blue); 
+            color: white; 
+            margin-top: 10px;
+        }
+        .btn-primary:hover { background-color: var(--hover-blue); transform: translateY(-1px); }
+
+        .btn-google { 
+            background-color: #ffffff; 
+            color: #1f1f1f; 
+            border: 1px solid var(--google-border);
+            margin-top: 5px;
+        }
+        .btn-google:hover { background-color: #f8f9fa; border-color: #555; transform: translateY(-1px); }
+        .btn-google i { color: #db4437; font-size: 1.1rem; }
+
+        /* --- 4. Divider & Footer --- */
+        .divider {
+            text-align: center;
+            margin: 20px 0;
+            border-top: 1px solid #eee;
+            position: relative;
+            width: 100%;
+        }
+        .divider span {
+            position: absolute;
+            top: -10px;
+            background: white;
+            padding: 0 12px;
+            color: #bbb;
+            font-size: 0.75rem;
+            left: 50%;
+            transform: translateX(-50%);
+            text-transform: uppercase;
+        }
+
+        .footer-links { text-align: center; margin-top: 1.5rem; color: #666; font-size: 0.85rem; }
+        .footer-links a { color: var(--primary-blue); text-decoration: none; font-weight: bold; }
+        
+        .errorlist { color: #ff4d4d; list-style: none; padding: 0; font-size: 0.8rem; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="auth-card">
+    {% block content %}{% endblock %}
+    
+    <div class="divider"><span>OR</span></div>
+    
+    <a href="{% provider_login_url 'google' %}" class="btn-auth btn-google">
+        <i class="fa-brands fa-google"></i> Continue with Google
+    </a>
+
+    <div class="footer-links">
+        {% block footer %}{% endblock %}
+    </div>
+</div>
+
+</body>
+</html>

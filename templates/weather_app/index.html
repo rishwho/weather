@@ -1,0 +1,237 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather</title>
+    
+    <link rel="icon" type="image/png" href="{% static 'weather_app/images/favicon.png' %}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        :root {
+            --glass: rgba(255, 255, 255, 0.25);
+            --glass-heavy: rgba(255, 255, 255, 0.45);
+            --primary-blue: #007bff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-image: url("{% static 'weather_app/images/background.jpg' %}");
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            color: #1a1a1a;
+            padding-top: 60px;
+            transition: background-image 0.8s ease-in-out;
+        }
+
+        .top-nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            height: 60px;
+            background: var(--glass-heavy);
+            backdrop-filter: blur(15px);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 40px;
+            z-index: 1000;
+            border-bottom: 1px solid rgba(255,255,255,0.3);
+            box-sizing: border-box;
+        }
+
+        .nav-brand { display: flex; align-items: center; height: 100%; }
+        .nav-logo { height: 45px; width: auto; display: block; transition: transform 0.3s ease; }
+        .nav-logo:hover { transform: scale(1.05); }
+
+        .nav-links { display: flex; align-items: center; }
+
+        .btn-pill {
+            background: var(--primary-blue) !important;
+            color: white !important;
+            padding: 8px 22px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0, 123, 255, 0.2);
+            display: inline-block;
+        }
+
+        .btn-pill:hover {
+            background: #0056b3 !important;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(0, 123, 255, 0.3);
+        }
+
+        .btn-clear {
+            padding: 5px 15px;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .user-greeting { font-weight: 600; color: #0056b3; margin-right: 15px; }
+
+       
+        .app-container { display: flex; flex-grow: 1; }
+        .sidebar { width: 250px; background: var(--glass-heavy); backdrop-filter: blur(15px); padding: 30px 20px; border-right: 1px solid rgba(255,255,255,0.3); }
+        .main-content { flex-grow: 1; display: flex; flex-direction: column; align-items: center; padding: 40px; width: 100%; }
+
+        
+        .weather-card {
+            background: var(--glass);
+            backdrop-filter: blur(15px) saturate(160%);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 30px;
+            padding: 30px;
+            width: 380px;
+            text-align: center;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.2);
+            margin-bottom: 20px;
+        }
+
+        .search-area { width: 100%; max-width: 800px; text-align: center; margin-bottom: 40px; }
+        #searchForm { display: flex; justify-content: center; gap: 15px; }
+
+        input[type="text"] { 
+            padding: 12px 20px; border-radius: 25px; border: 1px solid rgba(255,255,255,0.4); 
+            width: 35%; background: rgba(255,255,255,0.8); outline: none;
+        }
+
+        
+        .btn-search { 
+            padding: 12px 30px; 
+            border-radius: 25px; 
+            border: none; 
+            background: var(--primary-blue); 
+            color: white; 
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease; 
+        }
+
+
+        .btn-search:hover { 
+            background: #0056b3 !important;
+            transform: translateY(-2px); 
+            box-shadow: 0 6px 20px rgba(0, 123, 255, 0.4); 
+        }
+        .comparison-container { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; width: 100%; }
+        .forecast-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-top: 25px; border-top: 1px solid rgba(0,0,0,0.1); padding-top: 15px; }
+        .forecast-item { background: rgba(255,255,255,0.2); padding: 8px 2px; border-radius: 10px; font-size: 0.75rem; }
+        .history-item:hover { background: rgba(255,255,255,0.3); border-radius: 10px; }
+    </style>
+</head>
+<body>
+
+    <nav class="top-nav">
+        <div class="nav-brand">
+            <a href="{% url 'index' %}">
+                <img src="{% static 'weather_app/images/favicon.png' %}" alt="WeatherPro Logo" class="nav-logo">
+            </a>
+        </div>
+        <div class="nav-links">
+            {% if user.is_authenticated %}
+                <span class="user-greeting">{{ user.username }}</span>
+                <form action="{% url 'logout' %}" method="post" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-pill">Logout</button>
+                </form>
+            {% else %}
+                <a href="{% url 'login' %}" class="btn-pill">Login / Sign Up</a>
+            {% endif %}
+        </div>
+    </nav>
+
+    <div class="app-container">
+        {% if user.is_authenticated %}
+            <div class="sidebar">
+                <h3 style="display: flex; justify-content: space-between; align-items: center; font-size: 1.1rem;">
+                    Recent Searches 
+                    <a href="{% url 'clear_history' %}" class="btn-pill btn-clear">Clear All</a>
+                </h3>
+                {% for item in recent_searches %}
+                    <div class="history-item" style="padding:10px; cursor:pointer; border-bottom: 1px solid rgba(0,0,0,0.05);" onclick="searchAgain('{{ item.city_name }}')">
+                        {{ item.city_name }}
+                    </div>
+                {% empty %}
+                    <p style="font-size: 0.8rem; opacity: 0.6;">No recent searches</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <div class="main-content">
+            {% block content %}
+            <div class="search-area">
+                <form method="POST" id="searchForm" action="{% url 'index' %}">
+                    {% csrf_token %}
+                    <input type="text" name="city" id="city1" placeholder="Enter City..." required>
+                    <input type="text" name="city2" id="city2" placeholder="Enter City...(Optional)">
+                    <button type="submit" class="btn-search">Search</button>
+                </form>
+                <button type="button" onclick="askLocation()" style="background:none; border:none; color:#0056b3; cursor:pointer; margin-top:15px; font-weight: 500;">📍 Use My Location</button>
+            </div>
+
+            <div class="comparison-container">
+                {% for weather in weather_list %}
+                    <div class="weather-data-json" style="display:none;" data-description="{{ weather.description }}"></div>
+
+                    <div class="weather-card">
+                        <h2 style="margin-bottom: 5px;">{{ weather.city }}</h2>
+                        <div class="temp-display" style="font-size: 3rem; font-weight: bold; margin: 15px 0;">{{ weather.temperature }}°C</div>
+                        <div class="details"><b>{{ weather.description }}</b> | Wind: {{ weather.windspeed }} km/h</div>
+                        <div class="aqi-tag" style="margin-top: 10px; font-size: 0.9rem; opacity: 0.8;">AQI: {{ weather.aqi_index }}</div>
+
+                        <div class="forecast-grid">
+                            {% for day in weather.forecast %}
+                                <div class="forecast-item"><b>{{ day.day_name }}</b><br>{{ day.temp_max }}°</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% empty %}
+                    <p style="color: white; font-size: 1.2rem; background: rgba(0,0,0,0.2); padding: 20px; border-radius: 20px;">Search for a city to get started!</p>
+                {% endfor %}
+            </div>
+            {% endblock %}
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const containers = document.querySelectorAll('.weather-data-json');
+            if (containers.length > 0) {
+                const desc = containers[0].getAttribute('data-description').toLowerCase();
+                const body = document.body;
+                
+                if (desc.includes('rain')) body.style.backgroundImage = "url('/static/weather_app/images/rainy.jpg')";
+                else if (desc.includes('cloud')) body.style.backgroundImage = "url('/static/weather_app/images/cloudy.jpg')";
+                else if (desc.includes('clear')) body.style.backgroundImage = "url('/static/weather_app/images/sunny.jpg')";
+            }
+        });
+
+        function askLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition((pos) => {
+                    window.location.href = `/?lat=${pos.coords.latitude}&lon=${pos.coords.longitude}`;
+                });
+            }
+        }
+
+        function searchAgain(city) {
+            document.getElementById('city1').value = city;
+            document.getElementById('searchForm').submit();
+        }
+    </script>
+</body>
+</html>

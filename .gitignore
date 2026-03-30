@@ -1,0 +1,5 @@
+venv/               # Your virtual environment (too large to upload)
+__pycache__/        # Compiled Python files (unnecessary)
+db.sqlite3          # Your local data (Render will use its own database)
+.env                # Your API keys (NEVER upload these for security)
+.vscode/            # Your editor settings

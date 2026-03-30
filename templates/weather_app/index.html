@@ -4,16 +4,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Weather</title>
+    <title>WeatherPro | Dashboard</title>
     
     <link rel="icon" type="image/png" href="{% static 'weather_app/images/favicon.png' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <style>
         :root {
-            --glass: rgba(255, 255, 255, 0.25);
-            --glass-heavy: rgba(255, 255, 255, 0.45);
+            --glass: rgba(255, 255, 255, 0.2);
+            --glass-heavy: rgba(255, 255, 255, 0.4);
             --primary-blue: #007bff;
+            --fav-gold: #ffc107;
         }
 
         body {
@@ -23,114 +25,113 @@
             background-position: center;
             background-attachment: fixed;
             margin: 0;
-            display: flex;
-            flex-direction: column;
             min-height: 100vh;
             color: #1a1a1a;
             padding-top: 60px;
             transition: background-image 0.8s ease-in-out;
         }
 
+        /* --- Navigation --- */
         .top-nav {
             position: fixed;
-            top: 0;
-            width: 100%;
-            height: 60px;
+            top: 0; width: 100%; height: 60px;
             background: var(--glass-heavy);
             backdrop-filter: blur(15px);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0 40px;
-            z-index: 1000;
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 0 40px; z-index: 1000;
             border-bottom: 1px solid rgba(255,255,255,0.3);
             box-sizing: border-box;
         }
 
-        .nav-brand { display: flex; align-items: center; height: 100%; }
-        .nav-logo { height: 45px; width: auto; display: block; transition: transform 0.3s ease; }
-        .nav-logo:hover { transform: scale(1.05); }
-
-        .nav-links { display: flex; align-items: center; }
+        .nav-logo { height: 40px; transition: transform 0.3s; }
+        .nav-logo:hover { transform: scale(1.1); }
 
         .btn-pill {
-            background: var(--primary-blue) !important;
+            background: var(--primary-blue);
             color: white !important;
-            padding: 8px 22px;
+            padding: 8px 20px;
             border-radius: 25px;
             text-decoration: none;
             font-weight: 600;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             border: none;
             cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 12px rgba(0, 123, 255, 0.2);
-            display: inline-block;
+            transition: 0.3s;
         }
 
-        .btn-pill:hover {
-            background: #0056b3 !important;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 18px rgba(0, 123, 255, 0.3);
+        .btn-pill:hover { background: #0056b3; transform: translateY(-1px); }
+
+        /* --- Layout --- */
+        .app-container { display: flex; min-height: calc(100vh - 60px); }
+
+        .sidebar { 
+            width: 260px; 
+            background: rgba(255,255,255,0.15); 
+            backdrop-filter: blur(20px); 
+            padding: 25px; 
+            border-right: 1px solid rgba(255,255,255,0.2);
         }
 
-        .btn-clear {
-            padding: 5px 15px;
-            font-size: 0.7rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
+        .main-content { flex-grow: 1; padding: 40px; display: flex; flex-direction: column; align-items: center; }
 
-        .user-greeting { font-weight: 600; color: #0056b3; margin-right: 15px; }
-
-       
-        .app-container { display: flex; flex-grow: 1; }
-        .sidebar { width: 250px; background: var(--glass-heavy); backdrop-filter: blur(15px); padding: 30px 20px; border-right: 1px solid rgba(255,255,255,0.3); }
-        .main-content { flex-grow: 1; display: flex; flex-direction: column; align-items: center; padding: 40px; width: 100%; }
-
+        /* --- Search Area --- */
+        .search-area { width: 100%; max-width: 700px; margin-bottom: 40px; text-align: center; }
         
-        .weather-card {
-            background: var(--glass);
-            backdrop-filter: blur(15px) saturate(160%);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            border-radius: 30px;
-            padding: 30px;
-            width: 380px;
-            text-align: center;
-            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.2);
-            margin-bottom: 20px;
-        }
-
-        .search-area { width: 100%; max-width: 800px; text-align: center; margin-bottom: 40px; }
-        #searchForm { display: flex; justify-content: center; gap: 15px; }
+        /* Changed form to GET for better UX */
+        #searchForm { display: flex; gap: 10px; margin-bottom: 15px; }
 
         input[type="text"] { 
-            padding: 12px 20px; border-radius: 25px; border: 1px solid rgba(255,255,255,0.4); 
-            width: 35%; background: rgba(255,255,255,0.8); outline: none;
+            flex: 1; padding: 12px 20px; border-radius: 25px; 
+            border: 1px solid rgba(255,255,255,0.5); 
+            background: rgba(255,255,255,0.9); outline: none;
         }
 
-        
-        .btn-search { 
-            padding: 12px 30px; 
-            border-radius: 25px; 
-            border: none; 
-            background: var(--primary-blue); 
-            color: white; 
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s ease; 
-        }
-
-
-        .btn-search:hover { 
-            background: #0056b3 !important;
-            transform: translateY(-2px); 
-            box-shadow: 0 6px 20px rgba(0, 123, 255, 0.4); 
-        }
+        /* --- Weather Cards --- */
         .comparison-container { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; width: 100%; }
-        .forecast-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-top: 25px; border-top: 1px solid rgba(0,0,0,0.1); padding-top: 15px; }
-        .forecast-item { background: rgba(255,255,255,0.2); padding: 8px 2px; border-radius: 10px; font-size: 0.75rem; }
-        .history-item:hover { background: rgba(255,255,255,0.3); border-radius: 10px; }
+
+        .weather-card {
+            background: var(--glass);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 25px;
+            padding: 25px;
+            width: 320px;
+            text-align: center;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+
+        .btn-fav {
+            position: absolute; top: 20px; right: 20px;
+            color: #ccc; font-size: 1.2rem; text-decoration: none; transition: 0.3s;
+        }
+        .btn-fav:hover { color: var(--fav-gold); transform: scale(1.2); }
+
+        .temp-display { font-size: 3.5rem; font-weight: 800; margin: 10px 0; color: #333; }
+        
+        .forecast-grid { 
+            display: grid; grid-template-columns: repeat(5, 1fr); 
+            gap: 5px; margin-top: 20px; padding-top: 15px; 
+            border-top: 1px solid rgba(0,0,0,0.05); 
+        }
+
+        .forecast-item { font-size: 0.7rem; background: rgba(255,255,255,0.2); padding: 5px; border-radius: 8px; }
+
+        /* --- History / Favorites --- */
+        .side-section { margin-bottom: 30px; }
+        .side-section h4 { font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; color: #444; margin-bottom: 15px; }
+        
+        .list-item { 
+            padding: 8px 12px; margin-bottom: 5px; cursor: pointer; 
+            background: rgba(255,255,255,0.1); border-radius: 10px; font-size: 0.9rem;
+            transition: 0.2s; display: flex; justify-content: space-between;
+        }
+        .list-item:hover { background: rgba(255,255,255,0.3); }
+
+        @media (max-width: 768px) {
+            .app-container { flex-direction: column; }
+            .sidebar { width: 100%; border-right: none; border-bottom: 1px solid rgba(255,255,255,0.2); }
+        }
     </style>
 </head>
 <body>
@@ -138,15 +139,15 @@
     <nav class="top-nav">
         <div class="nav-brand">
             <a href="{% url 'index' %}">
-                <img src="{% static 'weather_app/images/favicon.png' %}" alt="WeatherPro Logo" class="nav-logo">
+                <img src="{% static 'weather_app/images/favicon.png' %}" alt="Logo" class="nav-logo">
             </a>
         </div>
         <div class="nav-links">
             {% if user.is_authenticated %}
-                <span class="user-greeting">{{ user.username }}</span>
+                <span style="margin-right: 15px; font-weight: 600;">Hi, {{ user.username }}</span>
                 <form action="{% url 'logout' %}" method="post" style="display:inline;">
                     {% csrf_token %}
-                    <button type="submit" class="btn-pill">Logout</button>
+                    <button type="submit" class="btn-pill" style="background: #ff4757 !important;">Logout</button>
                 </form>
             {% else %}
                 <a href="{% url 'login' %}" class="btn-pill">Login / Sign Up</a>
@@ -157,30 +158,45 @@
     <div class="app-container">
         {% if user.is_authenticated %}
             <div class="sidebar">
-                <h3 style="display: flex; justify-content: space-between; align-items: center; font-size: 1.1rem;">
-                    Recent Searches 
-                    <a href="{% url 'clear_history' %}" class="btn-pill btn-clear">Clear All</a>
-                </h3>
-                {% for item in recent_searches %}
-                    <div class="history-item" style="padding:10px; cursor:pointer; border-bottom: 1px solid rgba(0,0,0,0.05);" onclick="searchAgain('{{ item.city_name }}')">
-                        {{ item.city_name }}
+                <div class="side-section">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <h4>Recent</h4>
+                        <a href="{% url 'clear_history' %}" style="font-size: 0.6rem; color: #666;">Clear</a>
                     </div>
-                {% empty %}
-                    <p style="font-size: 0.8rem; opacity: 0.6;">No recent searches</p>
-                {% endfor %}
+                    {% for item in recent_searches %}
+                        <div class="list-item" onclick="searchAgain('{{ item.city_name }}')">
+                            <span>{{ item.city_name }}</span>
+                            <i class="fa-solid fa-clock-rotate-left" style="opacity: 0.4;"></i>
+                        </div>
+                    {% empty %}
+                        <p style="font-size: 0.75rem; opacity: 0.5;">No history yet</p>
+                    {% endfor %}
+                </div>
+
+                <div class="side-section">
+                    <h4>Favorites</h4>
+                    {% for fav in user_favorites %}
+                        <div class="list-item" onclick="searchAgain('{{ fav.city_name }}')">
+                            <span>{{ fav.city_name }}</span>
+                            <i class="fa-solid fa-star" style="color: var(--fav-gold);"></i>
+                        </div>
+                    {% empty %}
+                        <p style="font-size: 0.75rem; opacity: 0.5;">No favorites saved</p>
+                    {% endfor %}
+                </div>
             </div>
         {% endif %}
 
         <div class="main-content">
-            {% block content %}
             <div class="search-area">
-                <form method="POST" id="searchForm" action="{% url 'index' %}">
-                    {% csrf_token %}
-                    <input type="text" name="city" id="city1" placeholder="Enter City..." required>
-                    <input type="text" name="city2" id="city2" placeholder="Enter City...(Optional)">
-                    <button type="submit" class="btn-search">Search</button>
+                <form method="GET" id="searchForm" action="{% url 'index' %}">
+                    <input type="text" name="city" id="city1" placeholder="Enter Primary City..." required>
+                    <input type="text" name="city2" id="city2" placeholder="Compare with (Optional)...">
+                    <button type="submit" class="btn-pill">Search</button>
                 </form>
-                <button type="button" onclick="askLocation()" style="background:none; border:none; color:#0056b3; cursor:pointer; margin-top:15px; font-weight: 500;">📍 Use My Location</button>
+                <button type="button" onclick="askLocation()" style="background:none; border:none; color:#0056b3; cursor:pointer; margin-top:10px; font-size: 0.85rem;">
+                    <i class="fa-solid fa-location-crosshairs"></i> Use My Location
+                </button>
             </div>
 
             <div class="comparison-container">
@@ -188,26 +204,40 @@
                     <div class="weather-data-json" style="display:none;" data-description="{{ weather.description }}"></div>
 
                     <div class="weather-card">
-                        <h2 style="margin-bottom: 5px;">{{ weather.city }}</h2>
-                        <div class="temp-display" style="font-size: 3rem; font-weight: bold; margin: 15px 0;">{{ weather.temperature }}°C</div>
-                        <div class="details"><b>{{ weather.description }}</b> | Wind: {{ weather.windspeed }} km/h</div>
-                        <div class="aqi-tag" style="margin-top: 10px; font-size: 0.9rem; opacity: 0.8;">AQI: {{ weather.aqi_index }}</div>
+                        {% if user.is_authenticated %}
+                            <a href="{% url 'add_favorite' weather.city %}" class="btn-fav" title="Add to Favorites">
+                                <i class="fa-regular fa-star"></i>
+                            </a>
+                        {% endif %}
+                        
+                        <h2 style="margin: 0; font-size: 1.4rem;">{{ weather.city }}</h2>
+                        <div class="temp-display">{{ weather.temperature }}°C</div>
+                        <div style="font-weight: 600; color: #444;">{{ weather.description }}</div>
+                        <div style="font-size: 0.8rem; margin-top: 5px; opacity: 0.7;">
+                            Wind: {{ weather.windspeed }} km/h | AQI: {{ weather.aqi_index }}
+                        </div>
 
                         <div class="forecast-grid">
                             {% for day in weather.forecast %}
-                                <div class="forecast-item"><b>{{ day.day_name }}</b><br>{{ day.temp_max }}°</div>
+                                <div class="forecast-item">
+                                    <div style="font-weight: bold; margin-bottom: 3px;">{{ day.day_name }}</div>
+                                    <div>{{ day.temp_max }}°</div>
+                                </div>
                             {% endfor %}
                         </div>
                     </div>
                 {% empty %}
-                    <p style="color: white; font-size: 1.2rem; background: rgba(0,0,0,0.2); padding: 20px; border-radius: 20px;">Search for a city to get started!</p>
+                    <div style="text-align: center; margin-top: 50px;">
+                        <i class="fa-solid fa-cloud-sun" style="font-size: 4rem; color: white; opacity: 0.6; margin-bottom: 20px;"></i>
+                        <p style="color: white; font-size: 1.1rem; font-weight: 500;">Search for a city to see the magic!</p>
+                    </div>
                 {% endfor %}
             </div>
-            {% endblock %}
         </div>
     </div>
 
     <script>
+        // Update background based on first result's weather
         document.addEventListener("DOMContentLoaded", function() {
             const containers = document.querySelectorAll('.weather-data-json');
             if (containers.length > 0) {
@@ -224,12 +254,15 @@
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition((pos) => {
                     window.location.href = `/?lat=${pos.coords.latitude}&lon=${pos.coords.longitude}`;
+                }, (error) => {
+                    alert("Location access denied. Please enter a city manually.");
                 });
             }
         }
 
         function searchAgain(city) {
             document.getElementById('city1').value = city;
+            document.getElementById('city2').value = '';
             document.getElementById('searchForm').submit();
         }
     </script>

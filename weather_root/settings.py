@@ -28,7 +28,7 @@ DEBUG = True
 ALLOWED_HOSTS = [
     'localhost', 
     '127.0.0.1', 
-    'https://weather-5cg5.onrender.com', 
+    'weather-5cg5.onrender.com', 
 ]
 
 

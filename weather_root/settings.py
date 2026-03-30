@@ -28,7 +28,7 @@ DEBUG = True
 ALLOWED_HOSTS = [
     'localhost', 
     '127.0.0.1', 
-    'alannah-unadministered-shenita.ngrok-free.dev', 
+    'https://weather-5cg5.onrender.com', 
 ]
 
 
@@ -160,7 +160,7 @@ SOCIALACCOUNT_LOGIN_ON_GET = True
 SITE_ID = 1
 
 CSRF_TRUSTED_ORIGINS = [
-    'https://alannah-unadministered-shenita.ngrok-free.dev',
+    'https://weather-5cg5.onrender.com',
 ]
 
 # settings.py

@@ -15,37 +15,44 @@ def get_weather_info(lat, lon, display_name):
     }
     
     try:
-        w_url = f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&current_weather=true&hourly=temperature_2m&daily=temperature_2m_max,weathercode&timezone=auto"
+        # UPDATED URL: Using 'current' parameters for better reliability
+        w_url = f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&current=temperature_2m,wind_speed_10m,weather_code&hourly=temperature_2m&daily=temperature_2m_max,weather_code&timezone=auto"
         aq_url = f"https://air-quality-api.open-meteo.com/v1/air-quality?latitude={lat}&longitude={lon}&current=european_aqi"
         
-        # Use timeouts so the server doesn't hang if the API is slow
         w_res = requests.get(w_url, timeout=10).json()
         aq_res = requests.get(aq_url, timeout=10).json()
         
-        all_hourly_temps = w_res.get('hourly', {}).get('temperature_2m', [])
-        hourly_temps = all_hourly_temps[:24] 
-        hourly_labels = [f"{i}:00" for i in range(24)]
+        # SAFE EXTRACTION: Using .get() to avoid KeyErrors
+        current_data = w_res.get('current', {})
+        
+        # Prepare the clean data dictionary
+        weather_data = {
+            'city': display_name,
+            'temperature': current_data.get('temperature_2m', 'N/A'),
+            'description': WMO_CODES.get(current_data.get('weather_code'), 'Clear'),
+            'windspeed': current_data.get('wind_speed_10m', 'N/A'),
+            'aqi_index': aq_res.get('current', {}).get('european_aqi', 'N/A'),
+        }
 
+        # Hourly data for Chart.js
+        all_hourly_temps = w_res.get('hourly', {}).get('temperature_2m', [])
+        weather_data['hourly_temps'] = all_hourly_temps[:24] 
+        weather_data['hourly_labels'] = [f"{i}:00" for i in range(24)]
+
+        # 5-Day Forecast
         f_list = []
-        d = w_res.get('daily', {})
-        if d.get('time'):
+        daily = w_res.get('daily', {})
+        if daily.get('time'):
             for i in range(1, 6):
                 f_list.append({
-                    'day_name': datetime.strptime(d['time'][i], '%Y-%m-%d').strftime('%a'),
-                    'temp_max': d['temperature_2m_max'][i],
-                    'condition': WMO_CODES.get(d['weathercode'][i], 'Clear')
+                    'day_name': datetime.strptime(daily['time'][i], '%Y-%m-%d').strftime('%a'),
+                    'temp_max': daily.get('temperature_2m_max', [])[i],
+                    'condition': WMO_CODES.get(daily.get('weather_code', [])[i], 'Clear')
                 })
+        weather_data['forecast'] = f_list
 
-        return {
-            'city': display_name,
-            'temperature': w_res['current_weather']['temperature'],
-            'description': WMO_CODES.get(w_res['current_weather']['weathercode'], 'Clear'),
-            'windspeed': w_res['current_weather']['windspeed'],
-            'aqi_index': aq_res.get('current', {}).get('european_aqi', 'N/A'),
-            'forecast': f_list,
-            'hourly_temps': hourly_temps,
-            'hourly_labels': hourly_labels,
-        }
+        return weather_data
+
     except Exception as e:
         print(f"DEBUG: Weather API Error -> {e}")
         return None
@@ -54,7 +61,7 @@ def index(request):
     weather_list = []
     error_message = None
     
-    # Check both buckets
+    # Check both GET and POST
     city1 = request.GET.get('city') or request.POST.get('city')
     city2 = request.GET.get('city2') or request.POST.get('city2')
     
@@ -111,7 +118,7 @@ def index(request):
         'weather_list': weather_list,
         'recent_searches': recent_searches,
         'user_favorites': user_favorites,
-        'error_message': error_message, # Pass this to show a "Not Found" alert
+        'error_message': error_message,
     }
     return render(request, 'weather_app/index.html', context)
 
@@ -125,7 +132,6 @@ def register(request):
         form = UserCreationForm(request.POST)
         if form.is_valid():
             user = form.save()
-            # Explicitly set the backend to avoid authentication issues on Render
             login(request, user, backend='django.contrib.auth.backends.ModelBackend')
             return redirect('index')
     else:

@@ -4,9 +4,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Weather</title>
+    <title>WeatherPro</title>
     
     <link rel="icon" type="image/png" href="{% static 'weather_app/images/favicon.png' %}">
+    <link rel="shortcut icon" type="image/png" href="{% static 'weather_app/images/favicon.png' %}">
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
@@ -15,7 +17,6 @@
             --glass: rgba(255, 255, 255, 0.2);
             --glass-heavy: rgba(255, 255, 255, 0.4);
             --primary-blue: #007bff;
-            --fav-gold: #ffc107;
         }
 
         body {
@@ -49,7 +50,7 @@
         .btn-pill {
             background: var(--primary-blue);
             color: white !important;
-            padding: 8px 20px;
+            padding: 8px 22px;
             border-radius: 25px;
             text-decoration: none;
             font-weight: 600;
@@ -57,6 +58,8 @@
             border: none;
             cursor: pointer;
             transition: 0.3s;
+            display: inline-block;
+            text-align: center;
         }
 
         .btn-pill:hover { background: #0056b3; transform: translateY(-1px); }
@@ -76,8 +79,6 @@
 
         /* --- Search Area --- */
         .search-area { width: 100%; max-width: 700px; margin-bottom: 40px; text-align: center; }
-        
-        /* Changed form to GET for better UX */
         #searchForm { display: flex; gap: 10px; margin-bottom: 15px; }
 
         input[type="text"] { 
@@ -101,12 +102,6 @@
             position: relative;
         }
 
-        .btn-fav {
-            position: absolute; top: 20px; right: 20px;
-            color: #ccc; font-size: 1.2rem; text-decoration: none; transition: 0.3s;
-        }
-        .btn-fav:hover { color: var(--fav-gold); transform: scale(1.2); }
-
         .temp-display { font-size: 3.5rem; font-weight: 800; margin: 10px 0; color: #333; }
         
         .forecast-grid { 
@@ -117,12 +112,12 @@
 
         .forecast-item { font-size: 0.7rem; background: rgba(255,255,255,0.2); padding: 5px; border-radius: 8px; }
 
-        /* --- History / Favorites --- */
+        /* --- Sidebar Items --- */
         .side-section { margin-bottom: 30px; }
         .side-section h4 { font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; color: #444; margin-bottom: 15px; }
         
         .list-item { 
-            padding: 8px 12px; margin-bottom: 5px; cursor: pointer; 
+            padding: 10px 12px; margin-bottom: 5px; cursor: pointer; 
             background: rgba(255,255,255,0.1); border-radius: 10px; font-size: 0.9rem;
             transition: 0.2s; display: flex; justify-content: space-between;
         }
@@ -159,10 +154,14 @@
         {% if user.is_authenticated %}
             <div class="sidebar">
                 <div class="side-section">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                        <h4>Recent</h4>
-                        <a href="{% url 'clear_history' %}" style="font-size: 0.6rem; color: #666;">Clear</a>
+                    <h4>Recent Searches</h4>
+                    
+                    <div style="margin-bottom: 20px;">
+                        <a href="{% url 'clear_history' %}" class="btn-pill" style="width: 100%; box-sizing: border-box; font-size: 0.75rem; padding: 6px 0;">
+                            Clear All
+                        </a>
                     </div>
+
                     {% for item in recent_searches %}
                         <div class="list-item" onclick="searchAgain('{{ item.city_name }}')">
                             <span>{{ item.city_name }}</span>
@@ -170,18 +169,6 @@
                         </div>
                     {% empty %}
                         <p style="font-size: 0.75rem; opacity: 0.5;">No history yet</p>
-                    {% endfor %}
-                </div>
-
-                <div class="side-section">
-                    <h4>Favorites</h4>
-                    {% for fav in user_favorites %}
-                        <div class="list-item" onclick="searchAgain('{{ fav.city_name }}')">
-                            <span>{{ fav.city_name }}</span>
-                            <i class="fa-solid fa-star" style="color: var(--fav-gold);"></i>
-                        </div>
-                    {% empty %}
-                        <p style="font-size: 0.75rem; opacity: 0.5;">No favorites saved</p>
                     {% endfor %}
                 </div>
             </div>
@@ -204,12 +191,6 @@
                     <div class="weather-data-json" style="display:none;" data-description="{{ weather.description }}"></div>
 
                     <div class="weather-card">
-                        {% if user.is_authenticated %}
-                            <a href="{% url 'add_favorite' weather.city %}" class="btn-fav" title="Add to Favorites">
-                                <i class="fa-regular fa-star"></i>
-                            </a>
-                        {% endif %}
-                        
                         <h2 style="margin: 0; font-size: 1.4rem;">{{ weather.city }}</h2>
                         <div class="temp-display">{{ weather.temperature }}°C</div>
                         <div style="font-weight: 600; color: #444;">{{ weather.description }}</div>
@@ -237,7 +218,6 @@
     </div>
 
     <script>
-        // Update background based on first result's weather
         document.addEventListener("DOMContentLoaded", function() {
             const containers = document.querySelectorAll('.weather-data-json');
             if (containers.length > 0) {

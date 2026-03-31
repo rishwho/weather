@@ -8,7 +8,6 @@
     
     <link rel="icon" type="image/png" href="{% static 'weather_app/images/favicon.png' %}">
     <link rel="shortcut icon" type="image/png" href="{% static 'weather_app/images/favicon.png' %}">
-
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
@@ -20,7 +19,7 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
             background-image: url("{% static 'weather_app/images/background.jpg' %}");
             background-size: cover;
             background-position: center;
@@ -39,22 +38,21 @@
             background: var(--glass-heavy);
             backdrop-filter: blur(15px);
             display: flex; justify-content: space-between; align-items: center;
-            padding: 0 40px; z-index: 1000;
+            padding: 0 20px; z-index: 1000;
             border-bottom: 1px solid rgba(255,255,255,0.3);
             box-sizing: border-box;
         }
 
-        .nav-logo { height: 40px; transition: transform 0.3s; }
-        .nav-logo:hover { transform: scale(1.1); }
+        .nav-logo { height: 35px; }
 
         .btn-pill {
             background: var(--primary-blue);
             color: white !important;
-            padding: 8px 22px;
+            padding: 8px 18px;
             border-radius: 25px;
             text-decoration: none;
             font-weight: 600;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             border: none;
             cursor: pointer;
             transition: 0.3s;
@@ -65,30 +63,57 @@
         .btn-pill:hover { background: #0056b3; transform: translateY(-1px); }
 
         /* --- Layout --- */
-        .app-container { display: flex; min-height: calc(100vh - 60px); }
-
-        .sidebar { 
-            width: 260px; 
-            background: rgba(255,255,255,0.15); 
-            backdrop-filter: blur(20px); 
-            padding: 25px; 
-            border-right: 1px solid rgba(255,255,255,0.2);
+        .app-container { 
+            display: flex; 
+            flex-direction: column; /* Mobile Default */
         }
 
-        .main-content { flex-grow: 1; padding: 40px; display: flex; flex-direction: column; align-items: center; }
+        .sidebar { 
+            width: 100%; 
+            background: rgba(255,255,255,0.15); 
+            backdrop-filter: blur(20px); 
+            padding: 20px; 
+            box-sizing: border-box;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .main-content { 
+            flex-grow: 1; 
+            padding: 20px; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            width: 100%;
+            box-sizing: border-box;
+        }
 
         /* --- Search Area --- */
-        .search-area { width: 100%; max-width: 700px; margin-bottom: 40px; text-align: center; }
-        #searchForm { display: flex; gap: 10px; margin-bottom: 15px; }
+        .search-area { width: 100%; max-width: 700px; margin-bottom: 30px; text-align: center; }
+        
+        #searchForm { 
+            display: flex; 
+            flex-direction: column; /* Stack on mobile */
+            gap: 10px; 
+            margin-bottom: 15px; 
+        }
 
         input[type="text"] { 
-            flex: 1; padding: 12px 20px; border-radius: 25px; 
+            width: 100%;
+            padding: 12px 20px; border-radius: 25px; 
             border: 1px solid rgba(255,255,255,0.5); 
             background: rgba(255,255,255,0.9); outline: none;
+            box-sizing: border-box;
         }
 
         /* --- Weather Cards --- */
-        .comparison-container { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; width: 100%; }
+        .comparison-container { 
+            display: flex; 
+            flex-direction: column; /* Stack on mobile */
+            gap: 20px; 
+            justify-content: center; 
+            align-items: center;
+            width: 100%; 
+        }
 
         .weather-card {
             background: var(--glass);
@@ -96,13 +121,14 @@
             border: 1px solid rgba(255, 255, 255, 0.3);
             border-radius: 25px;
             padding: 25px;
-            width: 320px;
+            width: 100%;
+            max-width: 350px;
             text-align: center;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-            position: relative;
+            box-sizing: border-box;
         }
 
-        .temp-display { font-size: 3.5rem; font-weight: 800; margin: 10px 0; color: #333; }
+        .temp-display { font-size: 3rem; font-weight: 800; margin: 10px 0; color: #333; }
         
         .forecast-grid { 
             display: grid; grid-template-columns: repeat(5, 1fr); 
@@ -110,22 +136,27 @@
             border-top: 1px solid rgba(0,0,0,0.05); 
         }
 
-        .forecast-item { font-size: 0.7rem; background: rgba(255,255,255,0.2); padding: 5px; border-radius: 8px; }
+        .forecast-item { font-size: 0.65rem; background: rgba(255,255,255,0.2); padding: 5px; border-radius: 8px; }
 
         /* --- Sidebar Items --- */
-        .side-section { margin-bottom: 30px; }
-        .side-section h4 { font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; color: #444; margin-bottom: 15px; }
+        .side-section { margin-bottom: 20px; }
+        .side-section h4 { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; color: #444; margin-bottom: 12px; }
         
         .list-item { 
             padding: 10px 12px; margin-bottom: 5px; cursor: pointer; 
-            background: rgba(255,255,255,0.1); border-radius: 10px; font-size: 0.9rem;
+            background: rgba(255,255,255,0.1); border-radius: 10px; font-size: 0.85rem;
             transition: 0.2s; display: flex; justify-content: space-between;
         }
-        .list-item:hover { background: rgba(255,255,255,0.3); }
 
-        @media (max-width: 768px) {
-            .app-container { flex-direction: column; }
-            .sidebar { width: 100%; border-right: none; border-bottom: 1px solid rgba(255,255,255,0.2); }
+        /* ########## MEDIA QUERIES (Desktop Setup) ########## */
+        @media (min-width: 768px) {
+            .app-container { flex-direction: row; }
+            .sidebar { width: 280px; border-right: 1px solid rgba(255,255,255,0.2); border-bottom: none; height: calc(100vh - 60px); position: sticky; top: 60px; }
+            .top-nav { padding: 0 40px; }
+            #searchForm { flex-direction: row; }
+            .comparison-container { flex-direction: row; align-items: flex-start; }
+            .weather-card { width: 320px; }
+            .main-content { padding: 40px; }
         }
     </style>
 </head>
@@ -139,7 +170,7 @@
         </div>
         <div class="nav-links">
             {% if user.is_authenticated %}
-                <span style="margin-right: 15px; font-weight: 600;">Hi, {{ user.username }}</span>
+                <span style="margin-right: 15px; font-weight: 600; font-size: 0.8rem;">{{ user.username }}</span>
                 <form action="{% url 'logout' %}" method="post" style="display:inline;">
                     {% csrf_token %}
                     <button type="submit" class="btn-pill" style="background: #ff4757 !important;">Logout</button>
@@ -155,13 +186,11 @@
             <div class="sidebar">
                 <div class="side-section">
                     <h4>Recent Searches</h4>
-                    
-                    <div style="margin-bottom: 20px;">
+                    <div style="margin-bottom: 15px;">
                         <a href="{% url 'clear_history' %}" class="btn-pill" style="width: 100%; box-sizing: border-box; font-size: 0.75rem; padding: 6px 0;">
-                            Clear All
+                            Clear History
                         </a>
                     </div>
-
                     {% for item in recent_searches %}
                         <div class="list-item" onclick="searchAgain('{{ item.city_name }}')">
                             <span>{{ item.city_name }}</span>
@@ -177,11 +206,11 @@
         <div class="main-content">
             <div class="search-area">
                 <form method="GET" id="searchForm" action="{% url 'index' %}">
-                    <input type="text" name="city" id="city1" placeholder="Enter Primary City..." required>
-                    <input type="text" name="city2" id="city2" placeholder="Compare with (Optional)...">
-                    <button type="submit" class="btn-pill">Search</button>
+                    <input type="text" name="city" id="city1" placeholder="Primary City..." required>
+                    <input type="text" name="city2" id="city2" placeholder="Compare (Optional)...">
+                    <button type="submit" class="btn-pill" style="height: 45px;">Search</button>
                 </form>
-                <button type="button" onclick="askLocation()" style="background:none; border:none; color:#0056b3; cursor:pointer; margin-top:10px; font-size: 0.85rem;">
+                <button type="button" onclick="askLocation()" style="background:none; border:none; color:#0056b3; cursor:pointer; margin-top:10px; font-size: 0.85rem; width: 100%;">
                     <i class="fa-solid fa-location-crosshairs"></i> Use My Location
                 </button>
             </div>
@@ -191,26 +220,26 @@
                     <div class="weather-data-json" style="display:none;" data-description="{{ weather.description }}"></div>
 
                     <div class="weather-card">
-                        <h2 style="margin: 0; font-size: 1.4rem;">{{ weather.city }}</h2>
+                        <h2 style="margin: 0; font-size: 1.3rem;">{{ weather.city }}</h2>
                         <div class="temp-display">{{ weather.temperature }}°C</div>
-                        <div style="font-weight: 600; color: #444;">{{ weather.description }}</div>
-                        <div style="font-size: 0.8rem; margin-top: 5px; opacity: 0.7;">
+                        <div style="font-weight: 600; color: #444; font-size: 0.9rem;">{{ weather.description }}</div>
+                        <div style="font-size: 0.75rem; margin-top: 5px; opacity: 0.7;">
                             Wind: {{ weather.windspeed }} km/h | AQI: {{ weather.aqi_index }}
                         </div>
 
                         <div class="forecast-grid">
                             {% for day in weather.forecast %}
                                 <div class="forecast-item">
-                                    <div style="font-weight: bold; margin-bottom: 3px;">{{ day.day_name }}</div>
+                                    <div style="font-weight: bold; margin-bottom: 2px;">{{ day.day_name }}</div>
                                     <div>{{ day.temp_max }}°</div>
                                 </div>
                             {% endfor %}
                         </div>
                     </div>
                 {% empty %}
-                    <div style="text-align: center; margin-top: 50px;">
-                        <i class="fa-solid fa-cloud-sun" style="font-size: 4rem; color: white; opacity: 0.6; margin-bottom: 20px;"></i>
-                        <p style="color: white; font-size: 1.1rem; font-weight: 500;">Search for a city to see the magic!</p>
+                    <div style="text-align: center; margin-top: 30px;">
+                        <i class="fa-solid fa-cloud-sun" style="font-size: 3rem; color: white; opacity: 0.6; margin-bottom: 15px;"></i>
+                        <p style="color: white; font-size: 1rem;">Search for a city to start!</p>
                     </div>
                 {% endfor %}
             </div>
@@ -235,7 +264,7 @@
                 navigator.geolocation.getCurrentPosition((pos) => {
                     window.location.href = `/?lat=${pos.coords.latitude}&lon=${pos.coords.longitude}`;
                 }, (error) => {
-                    alert("Location access denied. Please enter a city manually.");
+                    alert("Location access denied.");
                 });
             }
         }
